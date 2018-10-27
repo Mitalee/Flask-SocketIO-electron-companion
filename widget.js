@@ -3,13 +3,15 @@ function startSocket() {
  
     namespace = '/test_local';
  
-    var socket = io.connect('http://localhost:5000/test_local',{'force new connection':true})
+    //var socket = io.connect('http://localhost:5000/test_local',{'force new connection':true})
+    
+    var socket = io.connect('http://localhost:5000/test_local',{'rememberTransport': false, 'force new connection':true})
 
     socket.on('connect', function() {
-        socket.emit('join', {room: $('#userid').val()});
+        socket.emit('join', {room: $('#username').val()});
     });
 
-    $('form#emit2web').submit(function(event) {
+    /*$('form#emit2web').submit(function(event) {
         socket.emit('local_to_web_event', {data: $('#emit2web_data').val()});
         return false;
     });
@@ -17,16 +19,16 @@ function startSocket() {
         socket.emit('local_event', {data: $('#emit_data').val()});
         return false;
     });
-
+*/
     socket.on('local_response', function(msg) {
         console.log(msg);
         $('#log').append('<br>' + $('<div/>').text('Received #' + msg.count + ': ' + msg.data).html());
     });
-  /*  $('form#join').submit(function(event) {
+    $('form#join').submit(function(event) {
         socket.emit('join', {room: $('#join_room').val()});
         return false;
     });
-*/
+
     $('form#leave').submit(function(event) {
         socket.emit('leave', {room: $('#leave_room').val()});
         return false;
