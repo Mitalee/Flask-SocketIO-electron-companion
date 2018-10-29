@@ -56,12 +56,20 @@ function httpPost(theUrl) {
     var xmlHttp = null;
     xmlHttp = new XMLHttpRequest()
     //xmlHttp.open("POST", theUrl, false)
-    xmlHttp.open("GET", theUrl, false)
-    xmlHttp.onerror= function () {
-        $('#log').append('<br> ERROR, status: ' + xmlHttp.status) 
-    };
-    xmlHttp.send(null)
-    return xmlHttp.status
+    xmlHttp.open("GET", theUrl, true)
+    xhr.onload = function (e) {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            return xhr.responseText
+          } else {
+            return xhr.statusText
+          }
+        }
+      };
+      xhr.onerror = function (e) {
+        return xhr.statusText
+      };
+      xhr.send(null);
 };//end httpPOST function
 
 
