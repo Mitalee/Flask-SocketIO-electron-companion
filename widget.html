@@ -31,18 +31,19 @@
                 <input type="text" name="leave_room" id="leave_room" placeholder="Room Name">
                 <input type="submit" value="Leave Room">
             </form>
-           <!--<form id="send_room" method="POST" action='#'>
+           <form id="send_room" method="POST" action='#'>
                 <input type="text" name="room_name" id="room_name" placeholder="Room Name">
                 <input type="text" name="room_data" id="room_data" placeholder="Message">
                 <input type="submit" value="Send to Room">
             </form>
-            <form id="close" method="POST" action="#">
+           <!-- <form id="close" method="POST" action="#">
                 <input type="text" name="close_room" id="close_room" placeholder="Room Name">
                 <input type="submit" value="Close Room">
             </form>-->
             <form id="disconnect" method="POST" action="#">
                 <input type="submit" value="Disconnect">
             </form>
+            <button id="testTally" onclick="pingTally()"> Connect to Tally</button>
             <h2>Receive:</h2>
             <div id="log"></div>
         <script src="widget.js"></script>
