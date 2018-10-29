@@ -57,20 +57,19 @@ function httpPost(theUrl) {
     xmlHttp = new XMLHttpRequest()
     //xmlHttp.open("POST", theUrl, false)
     xmlHttp.open("GET", theUrl, false)
+    xmlHttp.onerror= function () {
+        $('#log').append('<br> ERROR, status: ' + xmlHttp.status) 
+    };
     xmlHttp.send(null)
-    return xmlHttp.responseText
-};
+    return xmlHttp.status
+};//end httpPOST function
 
 
 function pingTally(message) {
    //load URL of Tally
-    //url = "http://192.168.0.15:9000"
+    //url = "http://192.168.0.15:9000" //TEST
     url = $('#tallyURL').val()
-    alert(url)
-    //url = "https://api.ipify.org/?format=jsonp&callback=getIP"
     var tally_response = httpPost(url)
     console.log(tally_response)
-    //document.getElementById("log").append = tally_response
-    //$('#log').append('<br>' + $('<div/>').text(tally_response));//.html());
-    $('#log').append(tally_response);
+    $('#log').append('<br>' + tally_response);
 };
