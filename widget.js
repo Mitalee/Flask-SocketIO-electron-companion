@@ -54,22 +54,14 @@ function startSocket() {
 
 function httpPost(theUrl) {
     var xmlHttp = null;
-    xmlHttp = new XMLHttpRequest()
-    xmlHttp.onreadystatechange = function(e) {
-        if (xmlHttp.readyState === 4) {
-          if (xmlHttp.status === 200) {
-           // Code here for the server answer when successful
-           return 
-          } else {
-           // Code here for the server answer when not successful
-          }
-        }
-      }
-      xmlHttp.ontimeout = function () {
-        // Well, it took to long do some code here to handle that
-      }
-      xmlHttp.open('GET', url, true)
-      xmlHttp.send();    
+    xmlHttp = new XMLHttpRequest()  
+    xmlHttp.open("POST", theUrl, false) //false is for synchronous requests.
+    try {
+        xmlHttp.send(null)
+    } catch (error) {
+        return '<br>Could not load URL. Please see Tally.'
+    }
+    return xmlHttp.responseText 
 };//end httpPOST function
 
 //https://stackoverflow.com/questions/5717093/check-if-a-javascript-string-is-a-url/34695026
@@ -94,28 +86,30 @@ function ValidURL(str) {
 
 function pingTally(message) {
    //load URL of Tally
-    //url = "http://192.168.0.15:9000" //TEST
+    //input_url = "http://192.168.0.15:9000" //TEST
     input_url = $('#tallyURL').val()
     if (!ValidURL(input_url)) {
         $('#log').append('<br> INVALID URL.');
     }
     else {
+        //result = httpPost(input_url)
+        //('#log').append('<br>' + result)
         $.ajax({
             type: "POST",
             url: input_url,
+            contentType: "application/xml",
             beforeSend: function() {
-               // $('#log').append("<br> Processing. Please wait..");
                $('#log').append('<span class="prepended"><br> Processing. Please wait.. </span>');
             },
-            /*complete: function() {
+            complete: function() {
                 $('#log').append("<br> Processed.");
-            },*/
+            },
             error: function(xhr, statusText) { 
                 $(".prepended").remove();
                 $('#log').append("<br> Error: "+statusText); 
                 },
             success: function(tally_response){ 
-                //alert(data.responseText == undefined)
+                alert(tally_response.responseText)
                 $(".prepended").remove();
                 if (tally_response.responseText == undefined) {
                     $('#log').append("<br> Wrong URL. See Tally for the correct URL.");
