@@ -55,29 +55,78 @@ function startSocket() {
 function httpPost(theUrl) {
     var xmlHttp = null;
     xmlHttp = new XMLHttpRequest()
-    //xmlHttp.open("POST", theUrl, false)
-    xmlHttp.open("GET", theUrl, true)
-    xhr.onload = function (e) {
-        if (xhr.readyState === 4) {
-          if (xhr.status === 200) {
-            return xhr.responseText
+    xmlHttp.onreadystatechange = function(e) {
+        if (xmlHttp.readyState === 4) {
+          if (xmlHttp.status === 200) {
+           // Code here for the server answer when successful
+           return 
           } else {
-            return xhr.statusText
+           // Code here for the server answer when not successful
           }
         }
-      };
-      xhr.onerror = function (e) {
-        return xhr.statusText
-      };
-      xhr.send(null);
+      }
+      xmlHttp.ontimeout = function () {
+        // Well, it took to long do some code here to handle that
+      }
+      xmlHttp.open('GET', url, true)
+      xmlHttp.send();    
 };//end httpPOST function
 
+//https://stackoverflow.com/questions/5717093/check-if-a-javascript-string-is-a-url/34695026
+function ValidURL(str) {
+    /*var pattern = new RegExp('^(https?:\/\/)?'+ // protocol
+      '((([a-z\d]([a-z\d-]*[a-z\d])*)\.)+[a-z]{2,}|'+ // domain name
+      '((\d{1,3}\.){3}\d{1,3}))'+ // OR ip (v4) address
+      '(\:\d+)?(\/[-a-z\d%_.~+]*)*'); // port and path
+      //'(\?[;&a-z\d%_.~+=-]*)?'+ // query string
+      //'(\#[-a-z\d_]*)?$','i'); // fragment locater*/
+
+      //https://www.debuggex.com/r/KaJrYj7vm9pKgOhK
+      var pattern = new RegExp('^((https?)?://)?(([0-9a-z_!~*\'().&=+$%-]+: )?[0-9a-z_!~*\'().&=+$%-]+@)?(([0-9]{1,3}\.){3}[0-9]{1,3}|([0-9a-z_!~*\'()-]+\.)*([0-9a-z][0-9a-z-]{0,61})?[0-9a-z]\.[a-z]{2,6}|localhost)(:[0-9]{1,5})');
+    if(!pattern.test(str)) {
+      //alert("Please enter a valid URL.");
+      return false;
+    } else {
+        //alert("Its valid URL.");
+      return true;
+    }
+  }
 
 function pingTally(message) {
    //load URL of Tally
     //url = "http://192.168.0.15:9000" //TEST
-    url = $('#tallyURL').val()
-    var tally_response = httpPost(url)
-    console.log(tally_response)
-    $('#log').append('<br>' + tally_response);
+    input_url = $('#tallyURL').val()
+    if (!ValidURL(input_url)) {
+        $('#log').append('<br> INVALID URL.');
+    }
+    else {
+        $.ajax({
+            type: "POST",
+            url: input_url,
+            beforeSend: function() {
+               // $('#log').append("<br> Processing. Please wait..");
+               $('#log').append('<span class="prepended"><br> Processing. Please wait.. </span>');
+            },
+            /*complete: function() {
+                $('#log').append("<br> Processed.");
+            },*/
+            error: function(xhr, statusText) { 
+                $(".prepended").remove();
+                $('#log').append("<br> Error: "+statusText); 
+                },
+            success: function(data){ 
+                //alert(data.responseText == undefined)
+                $(".prepended").remove();
+                if (data.responseText == undefined) {
+                    $('#log').append("<br> Wrong URL. See Tally for the correct URL.");
+                }
+                else {
+                    $('#log').append("<br> Success - "+ data.responseText);
+                }
+            },
+            timeout: 3000 // sets timeout to 3 seconds
+        });
+    }//end else
+        //var tally_response = httpPost(url)
+        //console.log(tally_response)
 };
