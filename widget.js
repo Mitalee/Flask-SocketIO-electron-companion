@@ -64,7 +64,9 @@ function httpPost(theUrl) {
 
 function pingTally(message) {
    //load URL of Tally
-    url = "http://localhost:9000"
+    //url = "http://192.168.0.15:9000"
+    url = $('#tallyURL').val()
+    alert(url)
     //url = "https://api.ipify.org/?format=jsonp&callback=getIP"
     var tally_response = httpPost(url)
     console.log(tally_response)
