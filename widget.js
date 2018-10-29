@@ -114,19 +114,17 @@ function pingTally(message) {
                 $(".prepended").remove();
                 $('#log').append("<br> Error: "+statusText); 
                 },
-            success: function(data){ 
+            success: function(tally_response){ 
                 //alert(data.responseText == undefined)
                 $(".prepended").remove();
-                if (data.responseText == undefined) {
+                if (tally_response.responseText == undefined) {
                     $('#log').append("<br> Wrong URL. See Tally for the correct URL.");
                 }
                 else {
-                    $('#log').append("<br> Success - "+ data.responseText);
+                    $('#log').append("<br> Success - "+ tally_response.responseText);
                 }
             },
             timeout: 3000 // sets timeout to 3 seconds
         });
     }//end else
-        //var tally_response = httpPost(url)
-        //console.log(tally_response)
 };
