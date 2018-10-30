@@ -114,14 +114,19 @@ function postAJAX(theUrl) {
 
 function postHTTPAsync(theUrl) {
     var xhr = new XMLHttpRequest();
+    xhr.onloadstart = function () {
+        $('#log').append('<span class="prepended"><br> Processing..</span>')
+      };
     xhr.ontimeout = function (e) {
         // XMLHttpRequest timed out. Do something here.
+        $(".prepended").remove();
         $('#log').append('<br> Timeout.' + xhr.statusText)
       };
   
     xhr.onload = function() {
     if (xhr.readyState == XMLHttpRequest.DONE) {
         //alert(xhr.responseText);
+        $(".prepended").remove();
         if (xhr.status == 200) {
             $('#log').append('<br>' + xhr.responseText + 'status: '+ xhr.status)
         }
@@ -135,7 +140,7 @@ function postHTTPAsync(theUrl) {
       };
 
 xhr.open('POST', theUrl, true);//async operation
-xhr.timeout = 2000; // time in milliseconds
+xhr.timeout = 3000; // time in milliseconds
 xhr.send(null);
 }
 
