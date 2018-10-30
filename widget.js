@@ -128,6 +128,7 @@ function postHTTPAsync(theUrl) {
         //alert(xhr.responseText);
         $(".prepended").remove();
         if (xhr.status == 200) {
+            console.log(xhr.responseText)
             $('#log').append('<br>' + xhr.responseText + 'status: '+ xhr.status)
         }
         else {
@@ -141,19 +142,40 @@ function postHTTPAsync(theUrl) {
 
 xhr.open('POST', theUrl, true);//async operation
 xhr.timeout = 3000; // time in milliseconds
-xhr.send(null);
+xhr.send(XML_req());
 }
 
 
 function pingTally(message) {
    //load URL of Tally
-    //input_url = "http://192.168.0.15:9000" //TEST
+   //DEBUG
+    //input_url = "http://192.168.0.15:9000"
     input_url = $('#tallyURL').val()
     if (!ValidURL(input_url)) {
         $('#log').append('<br> INVALID URL.');
     }
     else {
         postHTTPAsync(input_url)
-        //$('#log').append('<br>' + result)
+        //$('#log').append('<br>' + result) //for sync request
     }//end else
 };
+
+function XML_req() {
+    var req = `<ENVELOPE>
+    <HEADER>
+    <TALLYREQUEST>Export Data</TALLYREQUEST>
+    </HEADER>
+    <BODY>
+    <EXPORTDATA>
+    <REQUESTDESC>
+    <STATICVARIABLES>
+    <SVEXPORTFORMAT>$$SysName:XML</SVEXPORTFORMAT>
+    </STATICVARIABLES>
+    <REPORTNAME>Trial Balance</REPORTNAME>
+    </REQUESTDESC>
+    </EXPORTDATA>
+    </BODY>
+    </ENVELOPE>`
+    //console.log(req)
+    return req
+}
