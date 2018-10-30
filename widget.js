@@ -1,15 +1,14 @@
 var socket;
+
 function startSocket() {
  
-    namespace = '/test_local';
- 
-    //var socket = io.connect('http://localhost:5000/test_local',{'force new connection':true})
-    
+    namespace = '/test_local';    
     //var socket = io.connect('http://localhost:9000/test_local',{'rememberTransport': false, 'force new connection':true})
     socket = io.connect('http://localhost:5000/test_local',{'rememberTransport': false, 'force new connection':true})
     //socket = io.connect('http://' + document.domain + ':' + location.port + namespace); //USE THIS TO AVOID SESSION ERRORS
+    
     socket.on('connect', function() {
-        socket.emit('joined', {room: $('#username').val()});
+        socket.emit('joined', {room: $('#userid').val()});
     });
 
     socket.on('local_window', function(msg) {
@@ -21,20 +20,15 @@ function startSocket() {
         //console.log(msg);
         if(msg.data == 'Test Tally') {
             $('#log').append('<br>' + $('<div/>').text('Sending Data to Tally').html());
+            //Ping Tally here
             pingTally(null);
-        }
-        
-        //Ping Tally here
-
-        //Send Tally Response back to server
+        }       
     });
 
-
-    $('form#join').submit(function(event) {
+    /*$('form#join').submit(function(event) {
         socket.emit('join', {room: $('#join_room').val()});
         return false;
     });
-
     $('form#leave').submit(function(event) {
         socket.emit('leave', {room: $('#leave_room').val()});
         return false;
@@ -43,17 +37,18 @@ function startSocket() {
         socket.emit('my_room_event', {room: $('#room_name').val(), response: $('#room_data').val()});
         return false;
     });
-    /*$('form#close').submit(function(event) {
+    $('form#close').submit(function(event) {
         socket.emit('close_room', {room: $('#close_room').val()});
         return false;
     });*/
-    $('form#disconnect').submit(function(event) {
-        //socket.emit('leave', {room: $('#userid').val()});
-        socket.emit('disconnect_request');
-        return false;
-    });
+};//end Startsocket function
 
-};//end socket connection
+$('form#disconnect').submit(function(event) {
+    socket.emit('left', {room: $('#userid').val()});
+    socket.emit('disconnect_request');
+    return false;
+});
+
 
 //https://stackoverflow.com/questions/5717093/check-if-a-javascript-string-is-a-url/34695026
 function ValidURL(str) {
@@ -125,6 +120,7 @@ function postHTTPAsync(theUrl) {
         // XMLHttpRequest timed out. Do something here.
         $(".prepended").remove();
         $('#log').append('<br> Timeout.' + xhr.statusText)
+        socket.emit('local_response', {response: 'Timeout.' + xhr.statusText, room: $('#userid').val()});
       };
   
     xhr.onload = function() {
@@ -134,9 +130,11 @@ function postHTTPAsync(theUrl) {
         if (xhr.status == 200) {
             console.log(xhr.responseText)
             $('#log').append('<br>' + xhr.responseText + 'status: '+ xhr.status)
+            socket.emit('local_response', {response: xhr.responseText, room: $('#userid').val()});
         }
         else {
             $('#log').append('<br> Error.' + xhr.statusText)
+            socket.emit('local_response', {response: 'Error.' + xhr.statusText, room: $('#userid').val()});
         }//end else     */  
      }//end DONE request
     };//end onLOAD
