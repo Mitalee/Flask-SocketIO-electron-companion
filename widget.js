@@ -51,19 +51,6 @@ function startSocket() {
 
 };
 
-
-function httpPost(theUrl) {
-    var xmlHttp = null;
-    xmlHttp = new XMLHttpRequest()  
-    xmlHttp.open("POST", theUrl, false) //false is for synchronous requests.
-    try {
-        xmlHttp.send(null)
-    } catch (error) {
-        return '<br>Could not load URL. Please see Tally.'
-    }
-    return xmlHttp.responseText 
-};//end httpPOST function
-
 //https://stackoverflow.com/questions/5717093/check-if-a-javascript-string-is-a-url/34695026
 function ValidURL(str) {
     /*var pattern = new RegExp('^(https?:\/\/)?'+ // protocol
@@ -84,6 +71,75 @@ function ValidURL(str) {
     }
   }
 
+function postHTTPsync(theUrl) {
+    var xmlHttp = null;
+    xmlHttp = new XMLHttpRequest()  
+    xmlHttp.open("POST", theUrl, false) //false is for synchronous requests.
+    try {
+        xmlHttp.send(null)
+    } catch (error) {
+        return '<br>Could not load URL. Please see Tally.'
+    }
+    return xmlHttp.responseText 
+};//end httpPOST function
+
+function postAJAX(theUrl) {
+    $.ajax({
+        type: "POST",
+        url: theUrl,
+        contentType: "application/xml",
+        beforeSend: function() {
+           $('#log').append('<span class="prepended"><br> Processing. Please wait.. </span>');
+        },
+        complete: function() {
+            $('#log').append("<br> Processed.");
+        },
+        error: function(xhr, statusText) { 
+            $(".prepended").remove();
+            $('#log').append("<br> Error: "+statusText); 
+            },
+        success: function(tally_response){ 
+            alert(tally_response.responseText)
+            $(".prepended").remove();
+            if (tally_response.responseText == undefined) {
+                $('#log').append("<br> Wrong URL. See Tally for the correct URL.");
+            }
+            else {
+                $('#log').append("<br> Success - "+ tally_response.responseText);
+            }
+        },
+        timeout: 3000 // sets timeout to 3 seconds
+    });
+}
+
+function postHTTPAsync(theUrl) {
+    var xhr = new XMLHttpRequest();
+    xhr.ontimeout = function (e) {
+        // XMLHttpRequest timed out. Do something here.
+        $('#log').append('<br> Timeout.' + xhr.statusText)
+      };
+  
+    xhr.onload = function() {
+    if (xhr.readyState == XMLHttpRequest.DONE) {
+        //alert(xhr.responseText);
+        if (xhr.status == 200) {
+            $('#log').append('<br>' + xhr.responseText + 'status: '+ xhr.status)
+        }
+        else {
+            $('#log').append('<br> Error.' + xhr.statusText)
+        }//end else     */  
+     }//end DONE request
+    };//end onLOAD
+    xhr.onerror = function (e) {
+        $('#log').append('<br> ERROR REQUEST.' + xhr.statusText);
+      };
+
+xhr.open('POST', theUrl, true);//async operation
+xhr.timeout = 2000; // time in milliseconds
+xhr.send(null);
+}
+
+
 function pingTally(message) {
    //load URL of Tally
     //input_url = "http://192.168.0.15:9000" //TEST
@@ -92,33 +148,7 @@ function pingTally(message) {
         $('#log').append('<br> INVALID URL.');
     }
     else {
-        //result = httpPost(input_url)
-        //('#log').append('<br>' + result)
-        $.ajax({
-            type: "POST",
-            url: input_url,
-            contentType: "application/xml",
-            beforeSend: function() {
-               $('#log').append('<span class="prepended"><br> Processing. Please wait.. </span>');
-            },
-            complete: function() {
-                $('#log').append("<br> Processed.");
-            },
-            error: function(xhr, statusText) { 
-                $(".prepended").remove();
-                $('#log').append("<br> Error: "+statusText); 
-                },
-            success: function(tally_response){ 
-                alert(tally_response.responseText)
-                $(".prepended").remove();
-                if (tally_response.responseText == undefined) {
-                    $('#log').append("<br> Wrong URL. See Tally for the correct URL.");
-                }
-                else {
-                    $('#log').append("<br> Success - "+ tally_response.responseText);
-                }
-            },
-            timeout: 3000 // sets timeout to 3 seconds
-        });
+        postHTTPAsync(input_url)
+        //$('#log').append('<br>' + result)
     }//end else
 };
