@@ -1,4 +1,4 @@
-
+var socket;
 function startSocket() {
  
     namespace = '/test_local';
@@ -6,20 +6,24 @@ function startSocket() {
     //var socket = io.connect('http://localhost:5000/test_local',{'force new connection':true})
     
     //var socket = io.connect('http://localhost:9000/test_local',{'rememberTransport': false, 'force new connection':true})
-    var socket = io.connect('http://localhost:5000/test_local',{'rememberTransport': false, 'force new connection':true})
-
+    socket = io.connect('http://localhost:5000/test_local',{'rememberTransport': false, 'force new connection':true})
+    //socket = io.connect('http://' + document.domain + ':' + location.port + namespace); //USE THIS TO AVOID SESSION ERRORS
     socket.on('connect', function() {
-        socket.emit('join', {room: $('#username').val()});
+        socket.emit('joined', {room: $('#username').val()});
     });
 
     socket.on('local_window', function(msg) {
         console.log(msg);
-        $('#log').append('<br>' + $('<div/>').text('Received #' + msg.count + ': ' + msg.data).html());
+        $('#log').append('<br>' + $('<div/>').text('Received: ' + msg.data).html());
     });
 
     socket.on('local_request', function(msg) {
-        console.log(msg);
-        $('#log').append('<br>' + $('<div/>').text('Sending Data to Tally').html());
+        //console.log(msg);
+        if(msg.data == 'Test Tally') {
+            $('#log').append('<br>' + $('<div/>').text('Sending Data to Tally').html());
+            pingTally(null);
+        }
+        
         //Ping Tally here
 
         //Send Tally Response back to server
@@ -49,7 +53,7 @@ function startSocket() {
         return false;
     });
 
-};
+};//end socket connection
 
 //https://stackoverflow.com/questions/5717093/check-if-a-javascript-string-is-a-url/34695026
 function ValidURL(str) {
