@@ -12,43 +12,104 @@ function startSocket() {
     });
 
     socket.on('local_window', function(msg) {
-        console.log(msg);
         $('#log').append('<br>' + $('<div/>').text('Received: ' + msg.data).html());
     });
 
     socket.on('local_request', function(msg) {
-        //console.log(msg);
-        if(msg.data == 'Test Tally') {
+        console.log(msg.data);
+        /*if(msg.data == 'test_tally') {
             $('#log').append('<br>' + $('<div/>').text('Sending Data to Tally').html());
             //Ping Tally here
             pingTally(null);
-        }       
+        }  */     
+        pingTally(msg.data);
     });
 
-    /*$('form#join').submit(function(event) {
-        socket.emit('join', {room: $('#join_room').val()});
+    $('form#emit2web').submit(function(event) {
+        socket.emit('local_response', {room: $('#userid').val(), response:$('#emit2web_data').val()});
         return false;
     });
-    $('form#leave').submit(function(event) {
-        socket.emit('leave', {room: $('#leave_room').val()});
-        return false;
-    });
-    $('form#send_room').submit(function(event) {
-        socket.emit('my_room_event', {room: $('#room_name').val(), response: $('#room_data').val()});
-        return false;
-    });
-    $('form#close').submit(function(event) {
-        socket.emit('close_room', {room: $('#close_room').val()});
-        return false;
-    });*/
 };//end Startsocket function
 
 $('form#disconnect').submit(function(event) {
     socket.emit('left', {room: $('#userid').val()});
-    socket.emit('disconnect_request');
     return false;
 });
 
+function postHTTPAsync(theUrl, message) {
+    var xhr = new XMLHttpRequest();
+    xhr.onloadstart = function () {
+        $('#log').append('<span class="prepended"><br> Processing..</span>')
+      };
+    xhr.ontimeout = function (e) {
+        // XMLHttpRequest timed out. Do something here.
+        $(".prepended").remove();
+        $('#log').append('<br> Timeout.' + xhr.statusText)
+        socket.emit('local_response', {response: 'TIMEOUT.' + xhr.statusText, room: $('#userid').val()});
+      };
+  
+    xhr.onload = function() {
+    if (xhr.readyState == XMLHttpRequest.DONE) {
+        //alert(xhr.responseText);
+        $(".prepended").remove();
+        if (xhr.status == 200) {
+            console.log(xhr.responseText)
+            $('#log').append('<br>' + xhr.responseText + 'status: '+ xhr.status)
+            socket.emit('local_response', {response: xhr.responseText, room: $('#userid').val()});
+        }
+        else {
+            $('#log').append('<br> Error.' + xhr.statusText)
+            socket.emit('local_response', {response: 'Error.' + xhr.statusText, room: $('#userid').val()});
+        }//end else     */  
+     }//end DONE request
+    };//end onLOAD
+    xhr.onerror = function (e) {
+        $('#log').append('<br> ERROR REQUEST.' + xhr.statusText);
+        socket.emit('local_response', {response: 'BAD REQUEST..' + xhr.statusText, room: $('#userid').val()});
+      };
+
+xhr.open('POST', theUrl, true);//async operation
+xhr.timeout = 3000; // time in milliseconds
+xhr.send(message);
+}
+
+
+function pingTally(message) {
+   //load URL of Tally
+   //DEBUG
+    //input_url = "http://192.168.0.15:9000"
+    
+    input_url = $('#tallyURL').val();
+    //alert(input_url);
+    //CHECK VALID URL AND SEND MESSAGE TO TALLY
+    if (!ValidURL(input_url)) {
+        $('#log').append('<br> INVALID URL.');
+    }
+    else {
+        postHTTPAsync(input_url, message);
+        //$('#log').append('<br><span class= + 'Posted to:' + input_url) //for sync request
+    }//end else
+};
+
+function XML_req() {
+    var req = `<ENVELOPE>
+    <HEADER>
+    <TALLYREQUEST>Export Data</TALLYREQUEST>
+    </HEADER>
+    <BODY>
+    <EXPORTDATA>
+    <REQUESTDESC>
+    <STATICVARIABLES>
+    <SVEXPORTFORMAT>$$SysName:XML</SVEXPORTFORMAT>
+    </STATICVARIABLES>
+    <REPORTNAME>Trial Balance</REPORTNAME>
+    </REQUESTDESC>
+    </EXPORTDATA>
+    </BODY>
+    </ENVELOPE>`
+    //console.log(req)
+    return req
+}
 
 //https://stackoverflow.com/questions/5717093/check-if-a-javascript-string-is-a-url/34695026
 function ValidURL(str) {
@@ -109,75 +170,4 @@ function postAJAX(theUrl) {
         },
         timeout: 3000 // sets timeout to 3 seconds
     });
-}
-
-function postHTTPAsync(theUrl) {
-    var xhr = new XMLHttpRequest();
-    xhr.onloadstart = function () {
-        $('#log').append('<span class="prepended"><br> Processing..</span>')
-      };
-    xhr.ontimeout = function (e) {
-        // XMLHttpRequest timed out. Do something here.
-        $(".prepended").remove();
-        $('#log').append('<br> Timeout.' + xhr.statusText)
-        socket.emit('local_response', {response: 'Timeout.' + xhr.statusText, room: $('#userid').val()});
-      };
-  
-    xhr.onload = function() {
-    if (xhr.readyState == XMLHttpRequest.DONE) {
-        //alert(xhr.responseText);
-        $(".prepended").remove();
-        if (xhr.status == 200) {
-            console.log(xhr.responseText)
-            $('#log').append('<br>' + xhr.responseText + 'status: '+ xhr.status)
-            socket.emit('local_response', {response: xhr.responseText, room: $('#userid').val()});
-        }
-        else {
-            $('#log').append('<br> Error.' + xhr.statusText)
-            socket.emit('local_response', {response: 'Error.' + xhr.statusText, room: $('#userid').val()});
-        }//end else     */  
-     }//end DONE request
-    };//end onLOAD
-    xhr.onerror = function (e) {
-        $('#log').append('<br> ERROR REQUEST.' + xhr.statusText);
-      };
-
-xhr.open('POST', theUrl, true);//async operation
-xhr.timeout = 3000; // time in milliseconds
-xhr.send(XML_req());
-}
-
-
-function pingTally(message) {
-   //load URL of Tally
-   //DEBUG
-    //input_url = "http://192.168.0.15:9000"
-    input_url = $('#tallyURL').val()
-    if (!ValidURL(input_url)) {
-        $('#log').append('<br> INVALID URL.');
-    }
-    else {
-        postHTTPAsync(input_url)
-        //$('#log').append('<br>' + result) //for sync request
-    }//end else
-};
-
-function XML_req() {
-    var req = `<ENVELOPE>
-    <HEADER>
-    <TALLYREQUEST>Export Data</TALLYREQUEST>
-    </HEADER>
-    <BODY>
-    <EXPORTDATA>
-    <REQUESTDESC>
-    <STATICVARIABLES>
-    <SVEXPORTFORMAT>$$SysName:XML</SVEXPORTFORMAT>
-    </STATICVARIABLES>
-    <REPORTNAME>Trial Balance</REPORTNAME>
-    </REQUESTDESC>
-    </EXPORTDATA>
-    </BODY>
-    </ENVELOPE>`
-    //console.log(req)
-    return req
 }

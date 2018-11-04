@@ -11,40 +11,20 @@
     </head>
     <body>
         <body>
-            <h1>Flask-SocketIO Test</h1>
+            <h1>A2T Desktop Client</h1>
             <h2>Send:</h2>
+            <!--<button id="testTally" onclick="pingTally()"> Connect to Tally</button>-->
             <input type="text" name="userid" id="userid" value="102">
-            <button id="startSocket" onclick="startSocket()"> Connect to socket</button>
-           <!-- <form id="emit2web" method="POST" action='#'>
+            <button id="startSocket" onclick="startSocket()"> Connect</button>
+            <!--<form id="emit2web" method="POST" action='#'>
                 <input type="text" name="emit2web_data" id="emit2web_data" placeholder="Message">
                 <input type="submit" value="Echo Web">
-            </form>
-            <form id="emit" method="POST" action='#'>
-                <input type="text" name="emit_data" id="emit_data" placeholder="Message">
-                <input type="submit" value="Echo">
-            </form>
-            <form id="join" method="POST" action='#'>
-                <input type="text" name="join_room" id="join_room" placeholder="Room Name">
-                <input type="submit" value="Join Room">
-            </form>
-            <form id="leave" method="POST" action='#'>
-                <input type="text" name="leave_room" id="leave_room" placeholder="Room Name">
-                <input type="submit" value="Leave Room">
-            </form>
-           <form id="send_room" method="POST" action='#'>
-                <input type="text" name="room_name" id="room_name" placeholder="Room Name">
-                <input type="text" name="room_data" id="room_data" placeholder="Message">
-                <input type="submit" value="Send to Room">
-            </form>
-            <form id="close" method="POST" action="#">
-                <input type="text" name="close_room" id="close_room" placeholder="Room Name">
-                <input type="submit" value="Close Room">
             </form>-->
             <form id="disconnect" method="POST" action="#">
                 <input type="submit" value="Disconnect">
             </form>
-            <input type="text" id="tallyURL" value="http://localhost:9000">
-            <button id="testTally" onclick="pingTally()"> Connect to Tally</button>
+            <br>Your Tally URL here:
+            <input type="text" id="tallyURL" value="http://192.168.0.15:9000"><br><br>
             <h2>Receive:</h2>
             <div id="log"></div>
         <script src="widget.js"></script>
