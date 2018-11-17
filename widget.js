@@ -4,7 +4,7 @@ function startSocket() {
  
     namespace = '/test_local';    
     //var socket = io.connect('http://localhost:9000/test_local',{'rememberTransport': false, 'force new connection':true})
-    socket = io.connect('http://localhost:5000/test_local',{'rememberTransport': false, 'force new connection':true})
+    socket = io.connect('http://staging.khaata.in/test_local',{'rememberTransport': false, 'force new connection':true})
     //socket = io.connect('http://' + document.domain + ':' + location.port + namespace); //USE THIS TO AVOID SESSION ERRORS
     
     socket.on('connect', function() {
