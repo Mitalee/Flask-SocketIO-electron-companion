@@ -9,32 +9,32 @@ function startSocket() {
     
     socket.on('connect', function() {
         socket.emit('joined', {room: $('#userid').val()});
+        $('#startSocket').attr("disabled", true);
+        $('#disconnectSocket').removeAttr("disabled");
     });
 
     socket.on('local_window', function(msg) {
         $('#log').append('<br>' + $('<div/>').text('Received: ' + msg.data).html());
     });
 
-    socket.on('local_request', function(msg) {
-        console.log(msg.data);
-        /*if(msg.data == 'test_tally') {
-            $('#log').append('<br>' + $('<div/>').text('Sending Data to Tally').html());
-            //Ping Tally here
-            pingTally(null);
-        }  */     
+    socket.on('local_celery_request', function(msg) {
+        //console.log(msg.data);    
         pingTally(msg.data);
     });
 
-    $('form#emit2web').submit(function(event) {
+    /*$('form#emit2web').submit(function(event) {
         socket.emit('local_response', {room: $('#userid').val(), response:$('#emit2web_data').val()});
         return false;
-    });
+    });*/
 };//end Startsocket function
 
-$('form#disconnect').submit(function(event) {
+
+function disconnectSocket() {
     socket.emit('left', {room: $('#userid').val()});
+    $('#disconnectSocket').attr("disabled", true);
+    $('#startSocket').removeAttr("disabled");
     return false;
-});
+};
 /* END SOCKET FUNCTIONS */
 
 /* HTTP ASYNC FUNCTION */
@@ -47,60 +47,65 @@ function postHTTPAsync(theUrl, message) {
         // XMLHttpRequest timed out. Do something here.
         $(".prepended").remove();
         $('#log').append('<br> Timeout.' + xhr.statusText)
-        socket.emit('local_response', {response: 'TIMEOUT.' + xhr.statusText, room: $('#userid').val()});
+        socket.emit('local_celery_response', {'status': 'ERROR', 'local_result': 'TIMEOUT.' + xhr.statusText, room: $('#userid').val()},);
       };
   
     xhr.onload = function() {
     if (xhr.readyState == XMLHttpRequest.DONE) {
         //alert(xhr.responseText);
         $(".prepended").remove();
-        console.log(xhr.responseXML);
+        //console.log(xhr.responseXML);
         console.log(xhr.status);
         
         //SET variables to send to the server according to the response received from Tally
         var local_result = {};
 
         if (xhr.status == 200) {
-            //VALID RESPONSE
+            //VALID RESPONSE - GOT AN ENVELOPE TAG
             if (xhr.responseXML.getElementsByTagName("ENVELOPE").length) {
+                //VALID RESPONSE - WRONG XML    
                 if (xhr.responseXML.getElementsByTagName("LINEERROR").length) {
-                    local_result = {'LINEERROR': xhr.responseXML.getElementsByTagName('LINEERROR')[0].innerHTML}
+                    local_result = {'status': 'ERROR','resultText': xhr.responseXML.getElementsByTagName('LINEERROR')[0].innerHTML}
                 }
                 else {
+                        //VALID RESPONSE - CORRECT XML AND EXECUTED SUCCESSFULLY
                     try {
                         local_result = {
-                            'CREATED': xhr.responseXML.getElementsByTagName('CREATED')[0].innerHTML,
-                            'ALTERED': xhr.responseXML.getElementsByTagName('ALTERED')[0].innerHTML,
-                            'ERRORS': xhr.responseXML.getElementsByTagName('ERRORS')[0].innerHTML
+                            'status': 'OK',
+                            'resultText':{
+                                'created': xhr.responseXML.getElementsByTagName('CREATED')[0].innerHTML,
+                                'altered': xhr.responseXML.getElementsByTagName('ALTERED')[0].innerHTML,
+                                'errors': xhr.responseXML.getElementsByTagName('ERRORS')[0].innerHTML
+                            }
                             };
                         } catch(error) {
-                            local_result = {'Error': error.message};
+                            local_result = {'status': 'ERROR','resultText': error.message};
                     }   
                 }
             }
             //INVALID RESPONSE OR TEST TALLY
             else {
-                result = {
-                    'RESPONSE': xhr.responseXML.getElementsByTagName("RESPONSE")[0].innerHTML
+                local_result = {'status': 'RESPONSE', 
+                'resultText': xhr.responseXML.getElementsByTagName("RESPONSE")[0].innerHTML
                 }
             }
         }//End of status 200 loop
         else {
+            //xhr Status is not 200
             $('#log').append('<br> Error.' + xhr.statusText);
-            local_result = {'Error': xhr.statusText};
-            //socket.emit('local_response', {response: 'Error.' + xhr.statusText, room: $('#userid').val()});
+            local_result = {'status': 'ERROR','resultText': xhr.statusText};
         }//end else of status loop   
-        console.log('RESULT is: ', local_result); 
-        socket.emit('local_response', {response: local_result, room: $('#userid').val()});
+        //console.log('RESULT is: ', local_result); 
+        socket.emit('local_celery_response', {'local_result': local_result, room: $('#userid').val()});
      }//end DONE request
     };//end onLOAD
     xhr.onerror = function (e) {
         $('#log').append('<br> ERROR REQUEST.' + xhr.statusText);
-        socket.emit('local_response', {response: 'BAD REQUEST..' + xhr.statusText, room: $('#userid').val()});
+        socket.emit('local_celery_response', {'status': 'ERROR', 'resultText': 'BAD REQUEST..' + xhr.statusText, room: $('#userid').val()});
       };
 
 xhr.open('POST', theUrl, true);//async operation
-xhr.timeout = 3000; // time in milliseconds
+xhr.timeout = 4000; // time in milliseconds
 xhr.send(message);
 }
 /* END HTTPASYNC FUNCTION */
@@ -146,7 +151,9 @@ function ValidURL(str) {
     }
   }
 
-  
+function clearLog() {
+    $('#log').empty();
+}
 
 /* TESTING FUNCTIONS */
 
@@ -170,7 +177,7 @@ function check_local_response() {
         //alert(xhr.responseText);
         if (xhr.status == 200) {
             //console.log(xhr.responseXML.getElementsByTagName('DSPACCNAME')[0].getElementsByTagName('DSPDISPNAME'));
-            console.log(xhr.responseXML)
+            //console.log(xhr.responseXML)
             //console.log(xhr.responseXML.getElementsByTagName('ENVELOPE'));
             //VALID RESPONSE
             if (xhr.responseXML.getElementsByTagName("ENVELOPE").length) {
