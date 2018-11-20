@@ -2,9 +2,9 @@ var socket;
 
 function startSocket() {
  
-    namespace = '/test_local';    
-    //var socket = io.connect('http://localhost:9000/test_local',{'rememberTransport': false, 'force new connection':true})
-    socket = io.connect('http://staging.khaata.in/test_local',{'rememberTransport': false, 'force new connection':true})
+    //namespace = '/test_local';    
+    socket = io.connect('http://localhost:5000/test_local',{'rememberTransport': false, 'force new connection':true})
+    //socket = io.connect('http://staging.khaata.in/test_local',{'rememberTransport': false, 'force new connection':true})
     //socket = io.connect('http://' + document.domain + ':' + location.port + namespace); //USE THIS TO AVOID SESSION ERRORS
     
     socket.on('connect', function() {
@@ -44,10 +44,11 @@ function postHTTPAsync(theUrl, message) {
         $('#log').append('<span class="prepended"><br> Processing..</span>')
       };
     xhr.ontimeout = function (e) {
-        // XMLHttpRequest timed out. Do something here.
+        // XMLHttpRequest timed out. 
         $(".prepended").remove();
         $('#log').append('<br> Timeout.' + xhr.statusText)
-        socket.emit('local_celery_response', {'status': 'ERROR', 'local_result': 'TIMEOUT.' + xhr.statusText, room: $('#userid').val()},);
+        local_result = {'status': 'ERROR', 'resultText': 'TIMEOUT.' + xhr.statusText};
+        socket.emit('local_celery_response', {'local_result': local_result, room: $('#userid').val()});
       };
   
     xhr.onload = function() {
@@ -65,7 +66,18 @@ function postHTTPAsync(theUrl, message) {
             if (xhr.responseXML.getElementsByTagName("ENVELOPE").length) {
                 //VALID RESPONSE - WRONG XML    
                 if (xhr.responseXML.getElementsByTagName("LINEERROR").length) {
-                    local_result = {'status': 'ERROR','resultText': xhr.responseXML.getElementsByTagName('LINEERROR')[0].innerHTML}
+                    local_result = {
+                        'status': 'LINEERROR',
+                        'resultText':{
+                            'created': (xhr.responseXML.getElementsByTagName('CREATED').length) ? xhr.responseXML.getElementsByTagName('CREATED')[0].textContent : 0,
+                            'altered': (xhr.responseXML.getElementsByTagName('ALTERED').length) ? xhr.responseXML.getElementsByTagName('ALTERED')[0].textContent : 0,
+                            'errors': (xhr.responseXML.getElementsByTagName('ERRORS').length) ? xhr.responseXML.getElementsByTagName('ERRORS')[0].textContent : 0
+                        },
+                        'linerror_details': {
+                            'vch_number': (xhr.responseXML.getElementsByTagName('VCHNUMBER').length) ? xhr.responseXML.getElementsByTagName('VCHNUMBER')[0].textContent : 'NONE',
+                            'lineerror': (xhr.responseXML.getElementsByTagName('LINEERROR').length) ? xhr.responseXML.getElementsByTagName('LINEERROR')[0].textContent : 'NONE'
+                        }
+                    }   
                 }
                 else {
                         //VALID RESPONSE - CORRECT XML AND EXECUTED SUCCESSFULLY
@@ -73,9 +85,9 @@ function postHTTPAsync(theUrl, message) {
                         local_result = {
                             'status': 'OK',
                             'resultText':{
-                                'created': xhr.responseXML.getElementsByTagName('CREATED')[0].innerHTML,
-                                'altered': xhr.responseXML.getElementsByTagName('ALTERED')[0].innerHTML,
-                                'errors': xhr.responseXML.getElementsByTagName('ERRORS')[0].innerHTML
+                                'created': xhr.responseXML.getElementsByTagName('CREATED')[0].textContent,
+                                'altered': xhr.responseXML.getElementsByTagName('ALTERED')[0].textContent,
+                                'errors': xhr.responseXML.getElementsByTagName('ERRORS')[0].textContent
                             }
                             };
                         } catch(error) {
@@ -86,7 +98,7 @@ function postHTTPAsync(theUrl, message) {
             //INVALID RESPONSE OR TEST TALLY
             else {
                 local_result = {'status': 'RESPONSE', 
-                'resultText': xhr.responseXML.getElementsByTagName("RESPONSE")[0].innerHTML
+                'resultText': xhr.responseXML.getElementsByTagName("RESPONSE")[0].textContent
                 }
             }
         }//End of status 200 loop
@@ -95,13 +107,14 @@ function postHTTPAsync(theUrl, message) {
             $('#log').append('<br> Error.' + xhr.statusText);
             local_result = {'status': 'ERROR','resultText': xhr.statusText};
         }//end else of status loop   
-        //console.log('RESULT is: ', local_result); 
+        console.log('RESULT is: ', local_result); 
         socket.emit('local_celery_response', {'local_result': local_result, room: $('#userid').val()});
      }//end DONE request
     };//end onLOAD
     xhr.onerror = function (e) {
         $('#log').append('<br> ERROR REQUEST.' + xhr.statusText);
-        socket.emit('local_celery_response', {'status': 'ERROR', 'resultText': 'BAD REQUEST..' + xhr.statusText, room: $('#userid').val()});
+        local_result = {'status': 'ERROR', 'resultText': 'BAD REQUEST..' + xhr.statusText};
+        socket.emit('local_celery_response', {'local_result': local_result, room: $('#userid').val()});
       };
 
 xhr.open('POST', theUrl, true);//async operation
