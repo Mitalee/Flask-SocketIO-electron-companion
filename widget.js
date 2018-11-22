@@ -2,6 +2,13 @@ var socket;
 
 function startSocket() {
  
+
+    if ($('#userid').val() == ""){
+         alert("Please enter a value");
+         return false;       
+    }
+
+    
     //namespace = '/test_local';    
     socket = io.connect('http://localhost:5000/test_local',{'rememberTransport': false, 'force new connection':true})
     //socket = io.connect('http://staging.khaata.in/test_local',{'rememberTransport': false, 'force new connection':true})
