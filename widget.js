@@ -21,7 +21,13 @@ function startSocket() {
     });
 
     socket.on('local_window', function(msg) {
-        $('#log').append('<br>' + $('<div/>').text('Received: ' + msg.data).html());
+        if (msg.data == 'disconnect_client') {
+            disconnectSocket();
+        }
+        else {
+            $('#log').append('<br>' + $('<div/>').text('Received: ' + msg.data).html());
+        }
+        
     });
 
     socket.on('local_celery_request', function(msg) {
@@ -43,6 +49,10 @@ function disconnectSocket() {
     return false;
 };
 /* END SOCKET FUNCTIONS */
+//MANAGE USE CASE OF CLOSING THE APP TO DISCONNECT THE SOCKET
+window.onbeforeunload = function (e) { 
+    disconnectSocket();
+}
 
 /* HTTP ASYNC FUNCTION */
 function postHTTPAsync(theUrl, message) {
