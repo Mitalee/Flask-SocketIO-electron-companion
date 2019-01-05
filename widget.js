@@ -25,14 +25,15 @@ function startSocket() {
     socket.on('local_window', function(msg) {
         console.log(msg.data);
         if (msg.data == 'Disconnected!') {
+            //THIS WORKS WHEN THE WEBSOCKET CONNECTION IS UPGRADED TO WEBSOCKET
             console.log('disconnect call received.')
             btnEnableDisable(); 
         }
         else if (msg.data == 'disconnect_from_widget') {
+            //THIS IS REQUIRED IF THE WEBSOCKET CONNECTION IS IN LONG POLLING STATUS AND NOT UPGRADED TO WEBSOCKET
             console.log('disconnect_from_widget call received.');
             $('#log').append('<br>' + $('<div/>').text('Received: ' + msg.reason).html());
             disconnect_from_widget();
-            //btnEnableDisable(); 
         }
         else {
             console.log('appending the msg: '+msg.data);
