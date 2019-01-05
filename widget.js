@@ -27,6 +27,9 @@ function startSocket() {
         if (msg.data == 'Disconnected!') {
             //THIS WORKS WHEN THE WEBSOCKET CONNECTION IS UPGRADED TO WEBSOCKET
             console.log('disconnect call received.')
+            $('#log').append('<br>' + $('<div/>').text('Received: ' + msg.data +': '+ msg.reason).html());
+            setTimeout(function(){ console.log('SOCKET DISCONNECT STATUS:', socket.disconnected) }, 3000);
+            //console.log('SOCKET STATUS:', socket.disconnected);
             btnEnableDisable(); 
         }
         else if (msg.data == 'disconnect_from_widget') {
@@ -34,6 +37,10 @@ function startSocket() {
             console.log('disconnect_from_widget call received.');
             $('#log').append('<br>' + $('<div/>').text('Received: ' + msg.reason).html());
             disconnect_from_widget();
+        }
+        else if (msg.data.slice(0,9) == 'CONNECTED') {
+            socket.emit('join', {room: $('#userid').val()});
+            $('#log').append('<br>' + $('<div/>').text('Received: ' + msg.data).html()); 
         }
         else {
             console.log('appending the msg: '+msg.data);
@@ -58,10 +65,11 @@ function startSocket() {
 // }
 
 function disconnect_from_widget() {
+    socket.emit('left', {room: $('#userid').val()});
     socket.close(); 
     $('#log').append('<br>' + $('<div/>').text('Disconnected from khaata.in').html());
     btnEnableDisable();
-    console.log('SOCKET STATUS:', socket.disconnected);
+    console.log('SOCKET DISCONNECT STATUS:', socket.disconnected);
     return false;
 }
 
