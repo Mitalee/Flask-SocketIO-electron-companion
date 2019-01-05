@@ -15,9 +15,9 @@
             <h2>Send:</h2>
             <!--<button id="check_response" onclick="test_ping_tally()"> Check response</button><br>-->
 
-            <input type="text" name="userid" id="userid" placeholder="Enter User ID" value="">
+            <input type="text" name="userid" id="userid" placeholder="Enter User ID" value="50">
             <button class="Rectangle-3" id="startSocket" onclick="startSocket()">Connect to Khaata</button>
-            <button class="Rectangle-3" id="disconnectSocket" onclick="disconnectSocket()" disabled>Disconnect from Khaata</button>
+            <button class="Rectangle-3" id="disconnectSocket" onclick="inform_server_socket_disconnect()" disabled>Disconnect from Khaata</button>
             <br>
             <br>Your Tally URL here:
             <input type="text" size="25" id="tallyURL" value="http://localhost:9000"><br><br>

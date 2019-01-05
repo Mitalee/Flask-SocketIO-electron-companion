@@ -1,3 +1,5 @@
+//import { disconnect } from "cluster";
+
 var socket;
 
 function startSocket() {
@@ -15,19 +17,27 @@ function startSocket() {
     //socket = io.connect('http://' + document.domain + ':' + location.port + namespace); //USE THIS TO AVOID SESSION ERRORS
     
     socket.on('connect', function() {
-        socket.emit('joined', {room: $('#userid').val()});
+        //socket.emit('joined', {room: $('#userid').val()});
         $('#startSocket').attr("disabled", true);
         $('#disconnectSocket').removeAttr("disabled");
     });
 
     socket.on('local_window', function(msg) {
-        if (msg.data == 'disconnect_client') {
-            disconnectSocket();
+        console.log(msg.data);
+        if (msg.data == 'Disconnected!') {
+            console.log('disconnect call received.')
+            btnEnableDisable(); 
+        }
+        else if (msg.data == 'disconnect_from_widget') {
+            console.log('disconnect_from_widget call received.');
+            $('#log').append('<br>' + $('<div/>').text('Received: ' + msg.reason).html());
+            disconnect_from_widget();
+            //btnEnableDisable(); 
         }
         else {
-            $('#log').append('<br>' + $('<div/>').text('Received: ' + msg.data).html());
-        }
-        
+            console.log('appending the msg: '+msg.data);
+            $('#log').append('<br>' + $('<div/>').text('Received: ' + msg.data).html());     
+        }   
     });
 
     socket.on('local_celery_request', function(msg) {
@@ -41,18 +51,30 @@ function startSocket() {
     });*/
 };//end Startsocket function
 
+// function inform_server_socket_disconnect() {
+//     socket.emit('left', {room: $('#userid').val()});
+//     btnEnableDisable();
+// }
 
-function disconnectSocket() {
-    socket.emit('left', {room: $('#userid').val()});
+function disconnect_from_widget() {
+    socket.close(); 
+    $('#log').append('<br>' + $('<div/>').text('Disconnected from khaata.in').html());
+    btnEnableDisable();
+    console.log('SOCKET STATUS:', socket.disconnected);
+    return false;
+}
+
+/* END SOCKET FUNCTIONS */
+//MANAGE USE CASE OF CLOSING THE APP TO DISCONNECT THE SOCKET
+window.onbeforeunload = function (e) {
+    socket.close(); 
+}
+
+function btnEnableDisable() {
     $('#disconnectSocket').attr("disabled", true);
     $('#startSocket').removeAttr("disabled");
     return false;
 };
-/* END SOCKET FUNCTIONS */
-//MANAGE USE CASE OF CLOSING THE APP TO DISCONNECT THE SOCKET
-window.onbeforeunload = function (e) { 
-    disconnectSocket();
-}
 
 /* HTTP ASYNC FUNCTION */
 function postHTTPAsync(theUrl, message) {
