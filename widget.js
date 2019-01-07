@@ -183,6 +183,8 @@ function pingTally(message) {
     //CHECK VALID URL AND SEND MESSAGE TO TALLY
     if (!ValidURL(input_url)) {
         $('#log').append('<br> INVALID URL.');
+        local_result = {'status': 'ERROR', 'resultText': 'INVALID URL.' + xhr.statusText};
+        socket.emit('local_celery_response', {'local_result': local_result, room: $('#userid').val()});
     }
     else {
         postHTTPAsync(input_url, message);
@@ -326,45 +328,3 @@ function create_ledger() {
     return req
 }
 
-/* DEPRECATED
-function postHTTPsync(theUrl) {
-    var xmlHttp = null;
-    xmlHttp = new XMLHttpRequest()  
-    xmlHttp.open("POST", theUrl, false) //false is for synchronous requests.
-    try {
-        xmlHttp.send(null)
-    } catch (error) {
-        return '<br>Could not load URL. Please see Tally.'
-    }
-    return xmlHttp.responseText 
-};//end httpPOST function
-
-function postAJAX(theUrl) {
-    $.ajax({
-        type: "POST",
-        url: theUrl,
-        contentType: "application/xml",
-        beforeSend: function() {
-           $('#log').append('<span class="prepended"><br> Processing. Please wait.. </span>');
-        },
-        complete: function() {
-            $('#log').append("<br> Processed.");
-        },
-        error: function(xhr, statusText) { 
-            $(".prepended").remove();
-            $('#log').append("<br> Error: "+statusText); 
-            },
-        success: function(tally_response){ 
-            alert(tally_response.responseText)
-            $(".prepended").remove();
-            if (tally_response.responseText == undefined) {
-                $('#log').append("<br> Wrong URL. See Tally for the correct URL.");
-            }
-            else {
-                $('#log').append("<br> Success - "+ tally_response.responseText);
-            }
-        },
-        timeout: 3000 // sets timeout to 3 seconds
-    });
-}
-*/
