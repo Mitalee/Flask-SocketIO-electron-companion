@@ -113,7 +113,7 @@ function postHTTPAsync(theUrl, message, message_type) {
             //VALID RESPONSE - GOT AN ENVELOPE TAG
             if (xhr.responseXML.getElementsByTagName("ENVELOPE").length) {
                 //VALID RESPONSE - RECONCILE
-                if (message_type == 'reconcile_sync') {
+                if (message_type == 'reconcile') {
                     $arr = xhr.responseXML.getElementsByTagName("TALLYMESSAGE");
                     var voucher_array = [];
                     for (var i=0; i< $arr.length - 1;i++) {
@@ -132,7 +132,7 @@ function postHTTPAsync(theUrl, message, message_type) {
                             'errors': (xhr.responseXML.getElementsByTagName('ERRORS').length) ? xhr.responseXML.getElementsByTagName('ERRORS')[0].textContent : 0
                         },
                         'linerror_details': {
-                            'vch_number': (xhr.responseXML.getElementsByTagName('VCHNUMBER').length) ? xhr.responseXML.getElementsByTagName('VCHNUMBER')[0].textContent : 'NONE',
+                            'vch_number': (xhr.responseXML.getElementsByTagName('VOUCHERNUMBER').length) ? xhr.responseXML.getElementsByTagName('VCHNUMBER')[0].textContent : 'NONE',
                             'lineerror': (xhr.responseXML.getElementsByTagName('LINEERROR').length) ? xhr.responseXML.getElementsByTagName('LINEERROR')[0].textContent : 'NONE'
                         }
                     }   
@@ -177,7 +177,7 @@ function postHTTPAsync(theUrl, message, message_type) {
       };
 
 xhr.open('POST', theUrl, true);//async operation
-xhr.timeout = 4000; // time in milliseconds
+xhr.timeout = 15000; // time in milliseconds
 xhr.send(message);
 }
 /* END HTTPASYNC FUNCTION */
