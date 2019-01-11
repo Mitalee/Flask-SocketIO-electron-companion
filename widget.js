@@ -19,7 +19,7 @@ function startSocket() {
 
     socket.on('local_celery_request', function(msg) {
         //console.log(msg.data);    
-        pingTally(msg.data);
+        pingTally(msg.data, msg.type);
     });
 
     /*$('form#emit2web').submit(function(event) {
@@ -38,7 +38,7 @@ function disconnectSocket() {
 /* END SOCKET FUNCTIONS */
 
 /* HTTP ASYNC FUNCTION */
-function postHTTPAsync(theUrl, message) {
+function postHTTPAsync(theUrl, message, message_type) {
     var xhr = new XMLHttpRequest();
     xhr.onloadstart = function () {
         $('#log').append('<span class="prepended"><br> Processing..</span>')
@@ -64,8 +64,18 @@ function postHTTPAsync(theUrl, message) {
         if (xhr.status == 200) {
             //VALID RESPONSE - GOT AN ENVELOPE TAG
             if (xhr.responseXML.getElementsByTagName("ENVELOPE").length) {
+                //VALID RESPONSE - RECONCILE
+                if (message_type == 'reconcile_sync') {
+                    $arr = xhr.responseXML.getElementsByTagName("TALLYMESSAGE");
+                    var voucher_array = [];
+                    for (var i=0; i< $arr.length - 1;i++) {
+                        voucher_array.push($arr[i].getElementsByTagName('VOUCHERNUMBER')[0].innerHTML);
+                    }
+                    console.log(voucher_array);
+                    local_result = {'status': 'OK','resultText': voucher_array};
+                }// end of RECONCILE function
                 //VALID RESPONSE - WRONG XML    
-                if (xhr.responseXML.getElementsByTagName("LINEERROR").length) {
+                else if (xhr.responseXML.getElementsByTagName("LINEERROR").length) {
                     local_result = {
                         'status': 'LINEERROR',
                         'resultText':{
@@ -85,6 +95,7 @@ function postHTTPAsync(theUrl, message) {
                         local_result = {
                             'status': 'OK',
                             'resultText':{
+                                'vch_number': (xhr.responseXML.getElementsByTagName('VCHNUMBER').length) ? xhr.responseXML.getElementsByTagName('VCHNUMBER')[0].textContent : 'NONE',
                                 'created': xhr.responseXML.getElementsByTagName('CREATED')[0].textContent,
                                 'altered': xhr.responseXML.getElementsByTagName('ALTERED')[0].textContent,
                                 'errors': xhr.responseXML.getElementsByTagName('ERRORS')[0].textContent
@@ -125,20 +136,15 @@ xhr.send(message);
 
 
 /*PING TALLY HERE*/
-function pingTally(message) {
+function pingTally(message, message_type=null) {
    //load URL of Tally
-   //DEBUG
-    //input_url = "http://192.168.0.15:9000"
-    
     input_url = $('#tallyURL').val();
-    //alert(input_url);
     //CHECK VALID URL AND SEND MESSAGE TO TALLY
     if (!ValidURL(input_url)) {
         $('#log').append('<br> INVALID URL.');
     }
     else {
-        postHTTPAsync(input_url, message);
-        //$('#log').append('<br><span class= + 'Posted to:' + input_url) //for sync request
+        postHTTPAsync(input_url, message, message_type);
     }//end else
 };
 
