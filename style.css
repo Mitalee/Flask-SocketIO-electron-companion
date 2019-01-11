@@ -10,3 +10,9 @@
     margin: 4px 2px;
     cursor: pointer;
    }
+
+.Rectangle-3 {
+  height: 40px;
+  background-color: #f2ae39;
+  border-radius: 12px;
+}

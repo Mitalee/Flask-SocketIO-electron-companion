@@ -1,20 +1,51 @@
+//import { disconnect } from "cluster";
+
 var socket;
 
 function startSocket() {
  
+
+    if ($('#userid').val() == ""){
+         alert("Please enter a value");
+         return false;       
+    }
+
+    
     //namespace = '/test_local';    
     socket = io.connect('http://localhost:5000/test_local',{'rememberTransport': false, 'force new connection':true})
     //socket = io.connect('http://staging.khaata.in/test_local',{'rememberTransport': false, 'force new connection':true})
     //socket = io.connect('http://' + document.domain + ':' + location.port + namespace); //USE THIS TO AVOID SESSION ERRORS
     
     socket.on('connect', function() {
-        socket.emit('joined', {room: $('#userid').val()});
+        //socket.emit('joined', {room: $('#userid').val()});
         $('#startSocket').attr("disabled", true);
         $('#disconnectSocket').removeAttr("disabled");
     });
 
     socket.on('local_window', function(msg) {
-        $('#log').append('<br>' + $('<div/>').text('Received: ' + msg.data).html());
+        console.log(msg.data);
+        if (msg.data == 'Disconnected!') {
+            //THIS WORKS WHEN THE WEBSOCKET CONNECTION IS UPGRADED TO WEBSOCKET
+            console.log('disconnect call received.')
+            $('#log').append('<br>' + $('<div/>').text('Received: ' + msg.data +': '+ msg.reason).html());
+            setTimeout(function(){ console.log('SOCKET DISCONNECT STATUS:', socket.disconnected) }, 3000);
+            //console.log('SOCKET STATUS:', socket.disconnected);
+            btnEnableDisable(); 
+        }
+        else if (msg.data == 'disconnect_from_widget') {
+            //THIS IS REQUIRED IF THE WEBSOCKET CONNECTION IS IN LONG POLLING STATUS AND NOT UPGRADED TO WEBSOCKET
+            console.log('disconnect_from_widget call received.');
+            $('#log').append('<br>' + $('<div/>').text('Received: ' + msg.reason).html());
+            disconnect_from_widget();
+        }
+        else if (msg.data.slice(0,9) == 'CONNECTED') {
+            socket.emit('join', {room: $('#userid').val()});
+            $('#log').append('<br>' + $('<div/>').text('Received: ' + msg.data).html()); 
+        }
+        else {
+            console.log('appending the msg: '+msg.data);
+            $('#log').append('<br>' + $('<div/>').text('Received: ' + msg.data).html());     
+        }   
     });
 
     socket.on('local_celery_request', function(msg) {
@@ -28,14 +59,31 @@ function startSocket() {
     });*/
 };//end Startsocket function
 
+// function inform_server_socket_disconnect() {
+//     socket.emit('left', {room: $('#userid').val()});
+//     btnEnableDisable();
+// }
 
-function disconnectSocket() {
+function disconnect_from_widget() {
     socket.emit('left', {room: $('#userid').val()});
+    socket.close(); 
+    $('#log').append('<br>' + $('<div/>').text('Disconnected from khaata.in').html());
+    btnEnableDisable();
+    console.log('SOCKET DISCONNECT STATUS:', socket.disconnected);
+    return false;
+}
+
+/* END SOCKET FUNCTIONS */
+//MANAGE USE CASE OF CLOSING THE APP TO DISCONNECT THE SOCKET
+window.onbeforeunload = function (e) {
+    socket.close(); 
+}
+
+function btnEnableDisable() {
     $('#disconnectSocket').attr("disabled", true);
     $('#startSocket').removeAttr("disabled");
     return false;
 };
-/* END SOCKET FUNCTIONS */
 
 /* HTTP ASYNC FUNCTION */
 function postHTTPAsync(theUrl, message, message_type) {
@@ -142,6 +190,8 @@ function pingTally(message, message_type=null) {
     //CHECK VALID URL AND SEND MESSAGE TO TALLY
     if (!ValidURL(input_url)) {
         $('#log').append('<br> INVALID URL.');
+        local_result = {'status': 'ERROR', 'resultText': 'INVALID URL.' + xhr.statusText};
+        socket.emit('local_celery_response', {'local_result': local_result, room: $('#userid').val()});
     }
     else {
         postHTTPAsync(input_url, message, message_type);
@@ -284,45 +334,3 @@ function create_ledger() {
     return req
 }
 
-/* DEPRECATED
-function postHTTPsync(theUrl) {
-    var xmlHttp = null;
-    xmlHttp = new XMLHttpRequest()  
-    xmlHttp.open("POST", theUrl, false) //false is for synchronous requests.
-    try {
-        xmlHttp.send(null)
-    } catch (error) {
-        return '<br>Could not load URL. Please see Tally.'
-    }
-    return xmlHttp.responseText 
-};//end httpPOST function
-
-function postAJAX(theUrl) {
-    $.ajax({
-        type: "POST",
-        url: theUrl,
-        contentType: "application/xml",
-        beforeSend: function() {
-           $('#log').append('<span class="prepended"><br> Processing. Please wait.. </span>');
-        },
-        complete: function() {
-            $('#log').append("<br> Processed.");
-        },
-        error: function(xhr, statusText) { 
-            $(".prepended").remove();
-            $('#log').append("<br> Error: "+statusText); 
-            },
-        success: function(tally_response){ 
-            alert(tally_response.responseText)
-            $(".prepended").remove();
-            if (tally_response.responseText == undefined) {
-                $('#log').append("<br> Wrong URL. See Tally for the correct URL.");
-            }
-            else {
-                $('#log').append("<br> Success - "+ tally_response.responseText);
-            }
-        },
-        timeout: 3000 // sets timeout to 3 seconds
-    });
-}
-*/
