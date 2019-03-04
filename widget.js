@@ -1,5 +1,5 @@
 //import { disconnect } from "cluster";
-
+//COMMAND AND DATA
 var socket;
 
 function startSocket() {
@@ -12,8 +12,8 @@ function startSocket() {
 
     
     //namespace = '/test_local';    
-    socket = io.connect('http://localhost:5000/test_local',{'rememberTransport': false, 'force new connection':true})
-    //socket = io.connect('http://staging.khaata.in/test_local',{'rememberTransport': false, 'force new connection':true})
+    //socket = io.connect('http://localhost:5000/test_local',{'rememberTransport': false, 'force new connection':true})
+    socket = io.connect('http://beta.khaata.in/test_local',{'rememberTransport': false, 'force new connection':true})
     //socket = io.connect('http://' + document.domain + ':' + location.port + namespace); //USE THIS TO AVOID SESSION ERRORS
     
     socket.on('connect', function() {
@@ -96,7 +96,7 @@ function postHTTPAsync(theUrl, message, message_type) {
         $(".prepended").remove();
         $('#log').append('<br> Timeout.' + xhr.statusText)
         local_result = {'status': 'ERROR', 'resultText': 'TIMEOUT.' + xhr.statusText};
-        socket.emit('local_celery_response', {'local_result': local_result, room: $('#userid').val()});
+        socket.emit('local_celery_response', {'local_result': local_result, room: $('#userid').val(), 'type': message_type});
       };
   
     xhr.onload = function() {
@@ -132,7 +132,7 @@ function postHTTPAsync(theUrl, message, message_type) {
                             'errors': (xhr.responseXML.getElementsByTagName('ERRORS').length) ? xhr.responseXML.getElementsByTagName('ERRORS')[0].textContent : 0
                         },
                         'linerror_details': {
-                            'vch_number': (xhr.responseXML.getElementsByTagName('VOUCHERNUMBER').length) ? xhr.responseXML.getElementsByTagName('VCHNUMBER')[0].textContent : 'NONE',
+                            'vch_number': (xhr.responseXML.getElementsByTagName('VOUCHERNUMBER').length) ? xhr.responseXML.getElementsByTagName('VOUCHERNUMBER')[0].textContent : 'NONE',
                             'lineerror': (xhr.responseXML.getElementsByTagName('LINEERROR').length) ? xhr.responseXML.getElementsByTagName('LINEERROR')[0].textContent : 'NONE'
                         }
                     }   
@@ -167,13 +167,13 @@ function postHTTPAsync(theUrl, message, message_type) {
             local_result = {'status': 'ERROR','resultText': xhr.statusText};
         }//end else of status loop   
         console.log('RESULT is: ', local_result); 
-        socket.emit('local_celery_response', {'local_result': local_result, room: $('#userid').val()});
+        socket.emit('local_celery_response', {'local_result': local_result, room: $('#userid').val(), 'type':message_type});
      }//end DONE request
     };//end onLOAD
     xhr.onerror = function (e) {
         $('#log').append('<br> ERROR REQUEST.' + xhr.statusText);
-        local_result = {'status': 'ERROR', 'resultText': 'BAD REQUEST..' + xhr.statusText};
-        socket.emit('local_celery_response', {'local_result': local_result, room: $('#userid').val()});
+        local_result = {'status': 'ERROR', 'resultText': 'TALLY SERVER IS NOT UP OR CHECK THE TALLY URL IN THE WIDGET.' + xhr.statusText};
+        socket.emit('local_celery_response', {'local_result': local_result, room: $('#userid').val(), 'type':message_type});
       };
 
 xhr.open('POST', theUrl, true);//async operation
@@ -191,7 +191,7 @@ function pingTally(message, message_type=null) {
     if (!ValidURL(input_url)) {
         $('#log').append('<br> INVALID URL.');
         local_result = {'status': 'ERROR', 'resultText': 'INVALID URL.' + xhr.statusText};
-        socket.emit('local_celery_response', {'local_result': local_result, room: $('#userid').val()});
+        socket.emit('local_celery_response', {'local_result': local_result, room: $('#userid').val(), 'type': message_type});
     }
     else {
         postHTTPAsync(input_url, message, message_type);

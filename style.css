@@ -16,3 +16,27 @@
   background-color: #f2ae39;
   border-radius: 12px;
 }
+
+.action_button {
+  border-radius: 20px;
+  font-size: 14px;
+  color: #000000;
+  background-color: #f2ae39;
+  border: 0;
+  padding: 1rem 1rem;
+  font-weight: 400;
+  transition: background-color 0.3s, color 0.3s;
+  height: 50px;
+}
+
+input[type=text] {
+  font-size: 14px;
+  color: #000000;
+  margin: 0;
+  padding: 10.5px 1px;
+  min-width: 0;
+  box-sizing: content-box;
+  background: none;
+  -webkit-tap-highlight-color: transparent;
+  border-radius: 20px;
+}
