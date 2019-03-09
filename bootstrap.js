@@ -14,5 +14,5 @@ app.on('ready', function(){
         slashes: true
     }))
 
-    //mainWindow.openDevTools()
+    mainWindow.openDevTools()
 })

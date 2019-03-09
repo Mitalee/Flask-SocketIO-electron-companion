@@ -12,8 +12,8 @@ function startSocket() {
 
     
     //namespace = '/test_local';    
-    //socket = io.connect('http://localhost:5000/test_local',{'rememberTransport': false, 'force new connection':true})
-    socket = io.connect('http://beta.khaata.in/test_local',{'rememberTransport': false, 'force new connection':true})
+    socket = io.connect('http://localhost:5000/test_local',{'rememberTransport': false, 'force new connection':true})
+    //socket = io.connect('http://beta.khaata.in/test_local',{'rememberTransport': false, 'force new connection':true})
     //socket = io.connect('http://' + document.domain + ':' + location.port + namespace); //USE THIS TO AVOID SESSION ERRORS
     
     socket.on('connect', function() {
@@ -49,7 +49,7 @@ function startSocket() {
     });
 
     socket.on('local_celery_request', function(msg) {
-        //console.log(msg.data);    
+        console.log(msg.data);    
         pingTally(msg.data, msg.type);
     });
 
@@ -114,6 +114,7 @@ function postHTTPAsync(theUrl, message, message_type) {
             if (xhr.responseXML.getElementsByTagName("ENVELOPE").length) {
                 //VALID RESPONSE - RECONCILE
                 if (message_type == 'reconcile') {
+                    console.log(xhr.response);
                     $arr = xhr.responseXML.getElementsByTagName("TALLYMESSAGE");
                     var voucher_array = [];
                     for (var i=0; i< $arr.length - 1;i++) {
@@ -124,6 +125,7 @@ function postHTTPAsync(theUrl, message, message_type) {
                 }// end of RECONCILE function
                 //VALID RESPONSE - WRONG XML    
                 else if (xhr.responseXML.getElementsByTagName("LINEERROR").length) {
+                    console.log(xhr.response);
                     local_result = {
                         'status': 'LINEERROR',
                         'resultText':{
@@ -132,7 +134,7 @@ function postHTTPAsync(theUrl, message, message_type) {
                             'errors': (xhr.responseXML.getElementsByTagName('ERRORS').length) ? xhr.responseXML.getElementsByTagName('ERRORS')[0].textContent : 0
                         },
                         'linerror_details': {
-                            'vch_number': (xhr.responseXML.getElementsByTagName('VOUCHERNUMBER').length) ? xhr.responseXML.getElementsByTagName('VOUCHERNUMBER')[0].textContent : 'NONE',
+                            'vch_number': (xhr.responseXML.getElementsByTagName('VCHNUMBER').length) ? xhr.responseXML.getElementsByTagName('VCHNUMBER')[0].textContent : 'NONE',
                             'lineerror': (xhr.responseXML.getElementsByTagName('LINEERROR').length) ? xhr.responseXML.getElementsByTagName('LINEERROR')[0].textContent : 'NONE'
                         }
                     }   
