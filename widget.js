@@ -10,11 +10,13 @@ function startSocket() {
          return false;       
     }
 
-    
+    //https://www.dropbox.com/s/5r58rlcu2njb13k/khaata-widget-11-03-2019.zip?dl=0
     //namespace = '/test_local';    
-    socket = io.connect('http://localhost:5000/test_local',{'rememberTransport': false, 'force new connection':true})
-    //socket = io.connect('http://beta.khaata.in/test_local',{'rememberTransport': false, 'force new connection':true})
-    //socket = io.connect('http://' + document.domain + ':' + location.port + namespace); //USE THIS TO AVOID SESSION ERRORS
+   // require('https').globalAgent.options.rejectUnauthorized = false; 
+    
+    //socket = io.connect('http://localhost:5000/test_local',{secure: true, rejectUnauthorized: false, 'rememberTransport': false, 'force new connection':true})
+    socket = io.connect('https://khaata.in/test_local',{'rememberTransport': false, 'force new connection':true})
+    //socket = io.connect('https://' + domain + ':' + port + namespace); //USE THIS TO AVOID SESSION ERRORS
     
     socket.on('connect', function() {
         //socket.emit('joined', {room: $('#userid').val()});
