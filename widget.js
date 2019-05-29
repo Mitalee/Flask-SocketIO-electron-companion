@@ -14,8 +14,8 @@ function startSocket() {
     //namespace = '/test_local';    
    // require('https').globalAgent.options.rejectUnauthorized = false; 
     
-    //socket = io.connect('http://localhost:5000/test_local',{secure: true, rejectUnauthorized: false, 'rememberTransport': false, 'force new connection':true})
-    socket = io.connect('https://khaata.in/test_local',{'rememberTransport': false, 'force new connection':true})
+    socket = io.connect('http://localhost:5000/test_local',{secure: true, rejectUnauthorized: false, 'rememberTransport': false, 'force new connection':true})
+    //socket = io.connect('https://khaata.in/test_local',{'rememberTransport': false, 'force new connection':true})
     //socket = io.connect('https://' + domain + ':' + port + namespace); //USE THIS TO AVOID SESSION ERRORS
     
     socket.on('connect', function() {
@@ -116,14 +116,16 @@ function postHTTPAsync(theUrl, message, message_type) {
             if (xhr.responseXML.getElementsByTagName("ENVELOPE").length) {
                 //VALID RESPONSE - RECONCILE
                 if (message_type == 'reconcile') {
-                    console.log(xhr.response);
-                    $arr = xhr.responseXML.getElementsByTagName("TALLYMESSAGE");
-                    var voucher_array = [];
-                    for (var i=0; i< $arr.length - 1;i++) {
-                        voucher_array.push($arr[i].getElementsByTagName('VOUCHERNUMBER')[0].innerHTML);
-                    }
-                    console.log(voucher_array);
-                    local_result = {'status': 'OK','resultText': voucher_array};
+                    console.log('RECONCILE RESPONSE IS:')
+                    console.log(xhr);
+                    //$voucherXML = xhr.responseXML.getElementsByTagName("TALLYMESSAGE");
+                    $voucherXML = new XMLSerializer().serializeToString(xhr.responseXML);//.getElementsByTagName("VOUCHER");
+                    // var voucher_array = [];
+                    // for (var i=0; i< $voucherXML.length - 1;i++) {
+                    //     voucher_array.push($voucherXML[i].getElementsByTagName('VOUCHERNUMBER')[0].innerHTML);
+                    // }
+                    console.log($voucherXML);
+                    local_result = {'status': 'OK','resultText': $voucherXML};
                 }// end of RECONCILE function
                 //VALID RESPONSE - WRONG XML    
                 else if (xhr.responseXML.getElementsByTagName("LINEERROR").length) {
